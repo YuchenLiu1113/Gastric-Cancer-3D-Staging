@@ -76,7 +76,7 @@ if show: fig.add_trace(lattice())
 idx, label, color, r = stage_of(ypn, trg, ypt)
 fig.add_trace(go.Scatter3d(x=[ypn], y=[trg], z=[ypt], mode="markers",
                            marker=dict(size=8, color=color, line=dict(width=1, color="black")),
-                           name="输入点", showlegend=False,
+                           name="Input", showlegend=False,
                            hovertemplate="<b>输入点</b><br>ypN=%{x}<br>TRG=%{y}<br>ypT=%{z}<extra></extra>"))
 fig.update_scenes(xaxis=dict(title="ypN", range=[X_MIN,X_MAX], dtick=1),
                   yaxis=dict(title="TRG", range=[Y_MIN,Y_MAX], dtick=1),
