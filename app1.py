@@ -66,7 +66,7 @@ with st.sidebar:
     ypt = st.number_input("ypT", 0, 4, 1, step=1)
     show = st.checkbox("Show All Integer Grid Points", True)
 
-st.title("3D Staging")
+st.title("Gastric Cancer TRG-ypT-ypN 3D Staging")
 
 fig = go.Figure()
 for tr in cube_edges(): fig.add_trace(tr)
