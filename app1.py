@@ -9,7 +9,7 @@ X_MIN, X_MAX = 0, 3   # ypN
 Y_MIN, Y_MAX = 0, 3   # TRG
 Z_MIN, Z_MAX = 0, 4   # ypT
 
-RADII  = [1.01, 3.01, 4.20, 5.00, 5.60]
+RADII  = [1.001, 3.001, 4.20, 5.001, 5.60]
 COLORS = ['#1f77b4', '#2ca02c', '#ff7f0e', '#d62728', '#4C1F3A']
 LABELS = ['Stage I', 'Stage II', 'Stage IIIA', 'Stage IIIB', 'Stage IV']
 
@@ -60,14 +60,13 @@ def lattice():
                         hovertemplate="ypN=%{x}<br>TRG=%{y}<br>ypT=%{z}<extra></extra>")
 
 with st.sidebar:
-    st.header("输入参数")
+    st.header("Input")
     trg = st.number_input("TRG", 0, 3, 1, step=1)
     ypn = st.number_input("ypN", 0, 3, 1, step=1)
     ypt = st.number_input("ypT", 0, 4, 1, step=1)
-    show = st.checkbox("显示所有整数格点", True)
+    show = st.checkbox("Show All Integer Grid Points", True)
 
 st.title("3D Staging")
-#st.caption("坐标范围：ypN∈[0,3]，TRG∈[0,3]，ypT∈[0,4]")
 
 fig = go.Figure()
 for tr in cube_edges(): fig.add_trace(tr)
