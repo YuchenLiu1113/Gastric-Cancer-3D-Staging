@@ -11,7 +11,7 @@ Y_MIN, Y_MAX = 0, 3   # TRG (y)
 Z_MIN, Z_MAX = 0, 4   # ypT (z)
 
 # ---- Staging config (4 stages => 3 thresholds) ----
-RADII_THRESHOLDS  = [1.6, 3.8, 5.0]   # draw 3 boundary surfaces
+RADII_THRESHOLDS  = [1.3, 3.8, 5.0]   # draw 3 boundary surfaces
 STAGE_LABELS = ['Stage I', 'Stage II', 'Stage IIIA', 'Stage IIIB']  # 4 stages
 STAGE_COLORS = ['#1f77b4', '#2ca02c', '#ff7f0e', '#d62728']         # 4 colors
 
