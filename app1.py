@@ -9,9 +9,10 @@ X_MIN, X_MAX = 0, 3   # ypN
 Y_MIN, Y_MAX = 0, 3   # TRG
 Z_MIN, Z_MAX = 0, 4   # ypT
 
-RADII  = [1.001, 3.001, 4.20, 5.001,7]
-COLORS = ['#1f77b4', '#2ca02c', '#ff7f0e', '#d62728', '#4C1F3A']
-LABELS = ['Stage I', 'Stage II', 'Stage IIIA', 'Stage IIIB', 'Stage IIIC']
+RADII  = [1.01, 3.8, 5]
+colors = ['#1f77b4', '#2ca02c', '#ff7f0e', '#d62728']
+labels = ['Stage I', 'Stage II', 'Stage IIIA', 'Stage IIIB']
+
 
 def stage_of(x, y, z):
     r = (x*x + y*y + z*z) ** 0.5
