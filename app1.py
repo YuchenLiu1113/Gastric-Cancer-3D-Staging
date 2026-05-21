@@ -546,7 +546,7 @@ with survival_left:
             st.warning(f"Survival curve image was not found: {image_path}")
         else:
             st.image(image_bytes, use_column_width=True)
-        st.caption("KM curve rendered from the supplied stage-specific PDF; number-at-risk panel omitted.")
+        st.caption(" ")
 
 with survival_right:
     st.subheader("Survival Summary")
