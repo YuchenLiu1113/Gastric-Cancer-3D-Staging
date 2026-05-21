@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import csv
-import io
+from pathlib import Path
 
 import numpy as np
 import plotly.graph_objects as go
@@ -8,6 +7,7 @@ import streamlit as st
 
 
 st.set_page_config(page_title="Gastric Cancer 3D Staging", layout="wide")
+APP_DIR = Path(__file__).resolve().parent
 
 # ---- Axes ranges ----
 X_MIN, X_MAX = 0, 3   # ypN (x)
@@ -46,38 +46,40 @@ TRG_STAGE_GRID = {
     ],
 }
 
-SURVIVAL_POINTS = [
-    {"month": 0, "os": 1.000, "lower": 1.000, "upper": 1.000},
-    {"month": 3, "os": 0.985, "lower": 0.973, "upper": 0.994},
-    {"month": 6, "os": 0.960, "lower": 0.944, "upper": 0.974},
-    {"month": 9, "os": 0.925, "lower": 0.907, "upper": 0.943},
-    {"month": 12, "os": 0.894, "lower": 0.877, "upper": 0.912},
-    {"month": 15, "os": 0.865, "lower": 0.842, "upper": 0.887},
-    {"month": 18, "os": 0.840, "lower": 0.815, "upper": 0.864},
-    {"month": 21, "os": 0.805, "lower": 0.778, "upper": 0.831},
-    {"month": 24, "os": 0.766, "lower": 0.741, "upper": 0.792},
-    {"month": 27, "os": 0.735, "lower": 0.707, "upper": 0.763},
-    {"month": 30, "os": 0.705, "lower": 0.675, "upper": 0.735},
-    {"month": 33, "os": 0.685, "lower": 0.654, "upper": 0.716},
-    {"month": 36, "os": 0.667, "lower": 0.636, "upper": 0.698},
-]
-
-SURVIVAL_SUMMARY = {
-    "1-year OS": "89.4%",
-    "1-year 95% CI": "87.7%-91.2%",
-    "3-year OS": "66.7%",
-    "3-year 95% CI": "63.6%-69.8%",
+STAGE_SURVIVAL_DATA = {
+    0: {
+        "stage": "Stage I",
+        "image": "assets/survival/km_stage_i_curve.png",
+        "1-year OS": "98.6%",
+        "1-year 95% CI": "96.7%-100.0%",
+        "3-year OS": "91.9%",
+        "3-year 95% CI": "86.0%-98.3%",
+    },
+    1: {
+        "stage": "Stage II",
+        "image": "assets/survival/km_stage_ii_curve.png",
+        "1-year OS": "92.4%",
+        "1-year 95% CI": "90.2%-94.6%",
+        "3-year OS": "78.1%",
+        "3-year 95% CI": "74.1%-82.2%",
+    },
+    2: {
+        "stage": "Stage IIIA",
+        "image": "assets/survival/km_stage_iiia_curve.png",
+        "1-year OS": "87.5%",
+        "1-year 95% CI": "83.9%-91.2%",
+        "3-year OS": "54.9%",
+        "3-year 95% CI": "48.8%-61.7%",
+    },
+    3: {
+        "stage": "Stage IIIB",
+        "image": "assets/survival/km_stage_iiib_curve.png",
+        "1-year OS": "79.8%",
+        "1-year 95% CI": "74.8%-85.1%",
+        "3-year OS": "45.8%",
+        "3-year 95% CI": "39.2%-53.5%",
+    },
 }
-
-NUMBER_AT_RISK = [
-    {"month": 0, "at_risk": 1270},
-    {"month": 6, "at_risk": 1222},
-    {"month": 12, "at_risk": 1063},
-    {"month": 18, "at_risk": 871},
-    {"month": 24, "at_risk": 679},
-    {"month": 30, "at_risk": 506},
-    {"month": 36, "at_risk": 410},
-]
 
 
 def build_staging_map():
@@ -386,98 +388,34 @@ def staging_table_html(selected_trg, selected_ypn, selected_ypt):
     return "".join(html)
 
 
-def survival_figure(stage_idx):
-    months = [point["month"] for point in SURVIVAL_POINTS]
-    survival = [point["os"] * 100 for point in SURVIVAL_POINTS]
-    lower = [point["lower"] * 100 for point in SURVIVAL_POINTS]
-    upper = [point["upper"] * 100 for point in SURVIVAL_POINTS]
-    curve_color = STAGE_COLORS[stage_idx] if stage_idx is not None else "#334155"
-
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=months,
-        y=upper,
-        mode="lines",
-        line=dict(width=0),
-        hoverinfo="skip",
-        showlegend=False,
-    ))
-    fig.add_trace(go.Scatter(
-        x=months,
-        y=lower,
-        mode="lines",
-        fill="tonexty",
-        fillcolor="rgba(51, 65, 85, 0.14)",
-        line=dict(width=0),
-        hoverinfo="skip",
-        name="95% CI",
-    ))
-    fig.add_trace(go.Scatter(
-        x=months,
-        y=survival,
-        mode="lines",
-        line=dict(color=curve_color, width=3, shape="hv"),
-        name="Overall survival",
-        hovertemplate="Month %{x}<br>OS %{y:.1f}%<extra></extra>",
-    ))
-    fig.add_trace(go.Scatter(
-        x=[12, 36],
-        y=[89.4, 66.7],
-        mode="markers+text",
-        marker=dict(size=9, color=curve_color, line=dict(color="white", width=1.5)),
-        text=["1-year", "3-year"],
-        textposition="top center",
-        hovertemplate="%{text}<br>OS %{y:.1f}%<extra></extra>",
-        showlegend=False,
-    ))
-    fig.update_layout(
-        height=360,
-        margin=dict(l=10, r=10, t=20, b=10),
-        xaxis=dict(title="Time (months)", range=[0, 36], dtick=6, gridcolor="#e2e8f0"),
-        yaxis=dict(title="Overall survival (%)", range=[0, 102], dtick=20, gridcolor="#e2e8f0"),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
-    )
-    return fig
-
-
-def risk_table_html():
-    html = [style_block(), "<table class='risk-table'>"]
-    html.append("<tr><th>Months</th>")
-    for row in NUMBER_AT_RISK:
-        html.append(f"<th>{row['month']}</th>")
-    html.append("</tr><tr><th>Number at risk</th>")
-    for row in NUMBER_AT_RISK:
-        html.append(f"<td>{row['at_risk']}</td>")
-    html.append("</tr></table>")
-    return "".join(html)
-
-
-def survival_summary_html():
+def survival_summary_html(survival_data):
     return (
         style_block()
-        + "<div style='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 14px;'>"
+        + "<div class='result-card'>"
+        + "<div class='result-label'>Selected stage</div>"
+        + f"<div class='result-value'>{survival_data['stage']}</div>"
+        + "</div>"
+        + "<div style='height:10px;'></div>"
+        + "<div style='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 10px;'>"
         + "<div class='result-card'>"
         + "<div class='result-label'>1-year OS</div>"
-        + f"<div class='result-value'>{SURVIVAL_SUMMARY['1-year OS']}</div>"
-        + f"<div class='mini-note'>95% CI {SURVIVAL_SUMMARY['1-year 95% CI']}</div>"
+        + f"<div class='result-value'>{survival_data['1-year OS']}</div>"
         + "</div>"
         + "<div class='result-card'>"
         + "<div class='result-label'>3-year OS</div>"
-        + f"<div class='result-value'>{SURVIVAL_SUMMARY['3-year OS']}</div>"
-        + f"<div class='mini-note'>95% CI {SURVIVAL_SUMMARY['3-year 95% CI']}</div>"
+        + f"<div class='result-value'>{survival_data['3-year OS']}</div>"
         + "</div>"
+        + "</div>"
+        + "<div class='result-card'>"
+        + "<div class='result-label'>1-year 95% CI</div>"
+        + f"<div class='result-value'>{survival_data['1-year 95% CI']}</div>"
+        + "</div>"
+        + "<div style='height:10px;'></div>"
+        + "<div class='result-card'>"
+        + "<div class='result-label'>3-year 95% CI</div>"
+        + f"<div class='result-value'>{survival_data['3-year 95% CI']}</div>"
         + "</div>"
     )
-
-
-def survival_csv():
-    output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=["month", "os", "lower", "upper"])
-    writer.writeheader()
-    writer.writerows(SURVIVAL_POINTS)
-    return output.getvalue()
 
 
 # ---- Sidebar inputs ----
@@ -588,37 +526,19 @@ with top_right:
 
 st.divider()
 survival_left, survival_right = st.columns([1.7, 1], gap="large")
+selected_survival = STAGE_SURVIVAL_DATA.get(selected_idx)
 
 with survival_left:
-    st.subheader("Overall Survival Curve")
-    st.plotly_chart(survival_figure(selected_idx), use_container_width=True)
-    st.markdown(survival_summary_html(), unsafe_allow_html=True)
-    st.markdown(risk_table_html(), unsafe_allow_html=True)
-    st.caption("Curve redrawn from supplied aggregate OS values; confirm final citation against the source dataset or manuscript.")
+    st.subheader("Stage-Specific Overall Survival Curve")
+    if selected_survival is None:
+        st.info("Select a matrix-defined stage to show the corresponding survival curve.")
+    else:
+        st.image(str(APP_DIR / selected_survival["image"]), use_column_width=True)
+        st.caption("KM curve rendered from the supplied stage-specific PDF; number-at-risk panel omitted.")
 
 with survival_right:
     st.subheader("Survival Summary")
-    metric_1, metric_3 = st.columns(2)
-    metric_1.metric("1-year OS", SURVIVAL_SUMMARY["1-year OS"])
-    metric_3.metric("3-year OS", SURVIVAL_SUMMARY["3-year OS"])
-    st.markdown(
-        f"""
-        <div class="result-card">
-            <div class="result-label">1-year 95% CI</div>
-            <div class="result-value">{SURVIVAL_SUMMARY["1-year 95% CI"]}</div>
-        </div>
-        <div style="height:10px;"></div>
-        <div class="result-card">
-            <div class="result-label">3-year 95% CI</div>
-            <div class="result-value">{SURVIVAL_SUMMARY["3-year 95% CI"]}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.download_button(
-        "Download survival curve data",
-        data=survival_csv(),
-        file_name="overall_survival_curve.csv",
-        mime="text/csv",
-        use_container_width=True,
-    )
+    if selected_survival is None:
+        st.info("No survival summary for this undefined coordinate.")
+    else:
+        st.markdown(survival_summary_html(selected_survival), unsafe_allow_html=True)
