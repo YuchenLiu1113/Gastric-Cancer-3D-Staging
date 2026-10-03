@@ -27,10 +27,10 @@ UNCLASSIFIED_COLOR = "#9aa4b2"
 # Values are zero-based indexes into STAGE_LABELS.
 TRG_STAGE_GRID = {
     1: [
-        [1, 1, 1, 2],
-        [1, 1, 1, 2],
-        [1, 1, 1, 2],
-        [1, 2, 2, 3],
+        [1, 1, 1, 2],  
+        [1, 1, 1, 2],  
+        [1, 1, 1, 2],  
+        [1, 1, 2, 3], 
     ],
     2: [
         [1, 1, 1, 2],
